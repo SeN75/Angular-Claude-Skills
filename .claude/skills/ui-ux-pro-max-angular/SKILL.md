@@ -1,6 +1,13 @@
+---
+name: ui-ux-pro-max-angular
+description: "UI/UX design guidance for Angular apps (Angular Material, Angular CDK, Angular Router, signals). Use when designing, building, reviewing, or fixing Angular UI: pages, components, dialogs, sidenavs, tables, forms, design systems, theming, dark mode, accessibility, animation, responsive layout, typography, color, and charts. Uses the ui-ux-pro-max search engine with its --stack angular guidelines. Skip for backend, API, database, or infrastructure work."
+---
+
 # UI/UX Pro Max - Angular Design Intelligence
 
-Comprehensive design guide for Angular applications. Contains 50+ styles, 161 color palettes, 57 font pairings, 161 product types with reasoning rules, 99 UX guidelines, and 25 chart types across Angular tech stack. Searchable database with priority-based recommendations.
+Design guide for Angular applications (current Angular: standalone components, signals, built-in control flow). It layers Angular, Angular Material and Angular CDK guidance on top of the [UI/UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) searchable database of styles, color palettes, font pairings, product reasoning rules, UX guidelines and chart types.
+
+> **Requires the base `ui-ux-pro-max` skill.** This skill has no data or scripts of its own; every search command below runs the base skill's `search.py`. See [Requirements](#requirements).
 
 ## When to Apply
 
@@ -48,7 +55,7 @@ This Skill is not needed in the following situations:
 | Priority | Category | Impact | Domain | Key Checks (Must Have) | Anti-Patterns (Avoid) |
 |----------|----------|--------|--------|------------------------|------------------------|
 | 1 | Accessibility | CRITICAL | `ux` | Contrast 4.5:1, Alt text, Keyboard nav, Aria-labels | Removing focus rings, Icon-only buttons without labels |
-| 2 | Touch & Interaction | CRITICAL | `ux` | Min size 44×44px, 8px+ spacing, Loading feedback | Reliance on hover only, Instant state changes (0ms) |
+| 2 | Touch & Interaction | CRITICAL | `ux` | Min size 44×44px (Material default 48×48px), 8px+ spacing, Loading feedback | Reliance on hover only, Instant state changes (0ms) |
 | 3 | Performance | HIGH | `ux` | WebP/AVIF, Lazy loading, Reserve space (CLS < 0.1) | Layout thrashing, Cumulative Layout Shift |
 | 4 | Style Selection | HIGH | `style`, `product` | Match product type, Consistency, SVG icons (no emoji) | Mixing flat & skeuomorphic randomly, Emoji as icons |
 | 5 | Layout & Responsive | HIGH | `ux` | Mobile-first breakpoints, Viewport meta, No horizontal scroll | Horizontal scroll, Fixed px container widths, Disable zoom |
@@ -79,8 +86,8 @@ This Skill is not needed in the following situations:
 
 ### 2. Touch & Interaction (CRITICAL)
 
-- `touch-target-size` - Min 44×44pt (Apple) / 48×48dp (Material)
-- `touch-spacing` - Minimum 8px/8dp gap between touch targets
+- `touch-target-size` - Min 44×44 CSS px; Angular Material's default density gives 48×48px, so don't shrink density below that on touch screens
+- `touch-spacing` - Minimum 8px gap between touch targets
 - `hover-vs-tap` - Use click/tap for primary interactions; don't rely on hover alone
 - `loading-buttons` - Disable button during async operations; show spinner or progress using Angular Material spinner
 - `error-feedback` - Clear error messages near problem
@@ -115,11 +122,13 @@ This Skill is not needed in the following situations:
 - `main-thread-budget` - Keep per-frame work under ~16ms for 60fps
 - `progressive-loading` - Use skeleton screens / shimmer instead of long blocking spinners for >1s operations
 - `input-latency` - Keep input latency under ~100ms for taps/scrolls
-- `tap-feedback-speed` - Provide visual feedback within 100ms of tap
+- `tap-feedback-speed` - Visual feedback must start within 100ms of a tap (the animation itself then runs 150–300ms, see §7)
 - `debounce-throttle` - Use RxJS debounceTime/throttleTime for high-frequency events
-- `on-push` - Use OnPush change detection strategy for performance
-- `trackby` - Always use trackBy function with *ngFor
-- `signals` - Consider Angular Signals for fine-grained reactivity instead of observables where appropriate
+- `on-push` - Use OnPush for input-driven components where skipping subtree checks fits; prepare components for zoneless change detection
+- `track-in-for` - Always give `@for` a stable `track` expression (e.g. `track item.id`, not `track $index` for dynamic data)
+- `defer-below-fold` - Wrap heavy below-the-fold content in `@defer (on viewport)` with a `@placeholder` of the same size
+- `ng-optimized-image` - Use `NgOptimizedImage` (`ngSrc`, `width`/`height`, `priority` for the LCP image)
+- `signals` - Use Angular Signals (`signal`, `computed`, `linkedSignal`, `resource`) for fine-grained reactivity instead of observables where appropriate
 - `offline-support` - Provide offline state messaging and basic fallback (PWA / service worker)
 - `network-fallback` - Offer degraded modes for slow networks (lower-res images, fewer animations)
 
@@ -132,7 +141,7 @@ This Skill is not needed in the following situations:
 - `effects-match-style` - Shadows, blur, radius aligned with chosen style
 - `angular-material-theme` - Build cohesive Angular Material themes with custom palettes
 - `state-clarity` - Make hover/pressed/disabled states visually distinct while staying on-style
-- `elevation-consistent` - Use a consistent elevation/shadow scale for cards, sheets, modals - Angular CDK elevation classes
+- `elevation-consistent` - Use a consistent elevation/shadow scale for cards, sheets, modals - Angular Material elevation tokens (`--mat-sys-level0`…`level5`)
 - `dark-mode-pairing` - Design light/dark variants together
 - `icon-style-consistent` - Use one icon set/visual language across the product (Material Icons, Heroicons, etc.)
 - `system-controls` - Prefer native/system controls over fully custom ones
@@ -147,7 +156,7 @@ This Skill is not needed in the following situations:
 - `readable-font-size` - Minimum 16px body text on mobile (avoids iOS auto-zoom)
 - `line-length-control` - Mobile 35–60 chars per line; desktop 60–75 chars
 - `horizontal-scroll` - No horizontal scroll on mobile; ensure content fits viewport width
-- `spacing-scale` - Use 4pt/8dp incremental spacing system (Angular Material grid)
+- `spacing-scale` - Use a 4px/8px incremental spacing system
 - `touch-density` - Keep component spacing comfortable for touch
 - `container-width` - Consistent max-width on desktop (max-w-6xl / 7xl)
 - `z-index-management` - Define layered z-index scale (e.g. 0 / 10 / 20 / 40 / 100 / 1000)
@@ -157,12 +166,13 @@ This Skill is not needed in the following situations:
 - `orientation-support` - Keep layout readable and operable in landscape mode
 - `content-priority` - Show core content first on mobile; fold or hide secondary content
 - `visual-hierarchy` - Establish hierarchy via size, spacing, contrast — not color alone
-- `flex-layout` - Use Angular Flex Layout (or CSS flexbox/grid) for responsive layouts
+- `css-layout` - Use CSS Grid/Flexbox (or Tailwind) for responsive layouts; Angular Flex Layout (`fxLayout`) is deprecated
+- `rtl-support` - Use CSS logical properties (`margin-inline-start`, `inset-inline-end`) and the CDK `Directionality`/`dir` attribute so layouts mirror correctly for RTL languages
 
 ### 6. Typography & Color (MEDIUM)
 
 - `line-height` - Use 1.5-1.75 for body text
-- `line-length` - Limit to 65-75 characters per line
+- `line-length` - Limit body text to 60–75 characters per line on desktop and 35–60 on mobile (same as `line-length-control`)
 - `font-pairing` - Match heading/body font personalities
 - `font-scale` - Consistent type scale (e.g. 12 14 16 18 24 32)
 - `contrast-readability` - Darker text on light backgrounds (e.g. slate-900 on white)
@@ -182,7 +192,7 @@ This Skill is not needed in the following situations:
 
 - `duration-timing` - Use 150–300ms for micro-interactions; complex transitions ≤400ms; avoid >500ms
 - `transform-performance` - Use transform/opacity only; avoid animating width/height/top/left
-- `angular-animations` - Use Angular Animations (@angular/animations) for component transitions
+- `angular-animations` - Use native CSS transitions/keyframes with Angular's `animate.enter` / `animate.leave`; the `@angular/animations` package is deprecated, so don't add it to new code
 - `loading-states` - Show skeleton or progress indicator when loading exceeds 300ms
 - `excessive-motion` - Animate 1-2 key elements per view max
 - `easing` - Use ease-out for entering, ease-in for exiting; avoid linear for UI transitions
@@ -229,9 +239,9 @@ This Skill is not needed in the following situations:
 - `form-autosave` - Long forms should auto-save drafts to prevent data loss on accidental dismissal
 - `sheet-dismiss-confirm` - Confirm before dismissing a sheet/modal with unsaved changes
 - `error-clarity` - Error messages must state cause + how to fix (not just "Invalid input")
-- `field-grouping` - Group related fields logically using Angular Material fieldset or visual grouping
+- `field-grouping` - Group related fields logically using native `<fieldset>`/`<legend>` (Angular Material has no fieldset component) or visual grouping
 - `read-only-distinction` - Read-only state should be visually and semantically different from disabled
-- `focus-management` - After submit error, auto-focus the first invalid field using ViewChild
+- `focus-management` - After submit error, auto-focus the first invalid field (query it with `viewChildren()` or `.ng-invalid` inside the form element)
 - `error-summary` - For multiple errors, show summary at top with anchor links to each field
 - `touch-friendly-input` - Mobile input height ≥44px to meet touch target requirements
 - `destructive-emphasis` - Destructive actions use semantic danger color (red) and are visually separated from primary actions
@@ -239,7 +249,8 @@ This Skill is not needed in the following situations:
 - `aria-live-errors` - Form errors use aria-live region or role="alert" to notify screen readers
 - `contrast-feedback` - Error and success state colors must meet 4.5:1 contrast ratio
 - `timeout-feedback` - Request timeout must show clear feedback with retry option
-- `reactive-forms` - Use Angular Reactive Forms for complex form validation and dynamic form arrays
+- `reactive-forms` - Use typed Angular Reactive Forms for complex form validation and dynamic form arrays
+- `custom-controls` - Implement `ControlValueAccessor` for custom inputs so they work with forms, validation and `<mat-form-field>`
 - `form-state` - Use Angular form state (pristine, dirty, touched, untouched) for styling and validation UX
 
 ### 9. Navigation Patterns (HIGH)
@@ -287,7 +298,7 @@ This Skill is not needed in the following situations:
 - `animation-optional` - Chart entrance animations must respect prefers-reduced-motion
 - `large-dataset` - For 1000+ data points, aggregate or sample; provide drill-down for detail
 - `number-formatting` - Use locale-aware formatting for numbers, dates, currencies on axes and labels
-- `touch-target-chart` - Interactive chart elements must have ≥44pt tap area or expand on touch
+- `touch-target-chart` - Interactive chart elements must have ≥44×44px tap area or expand on touch
 - `no-pie-overuse` - Avoid pie/donut for >5 categories; switch to bar chart for clarity
 - `contrast-data` - Data lines/bars vs background ≥3:1; data text labels ≥4.5:1
 - `legend-interactive` - Legends should be clickable to toggle series visibility
@@ -311,13 +322,38 @@ Search specific domains using the CLI tool below.
 
 ---
 
-## Prerequisites
+## Requirements
 
-Check if Python is installed:
+### 1. The base `ui-ux-pro-max` skill
+
+All commands in this file run the base skill's search script. Install it once in the project (recommended):
+
+```bash
+npm install -g ui-ux-pro-max-cli
+uipro init --ai claude        # creates .claude/skills/ui-ux-pro-max/
+```
+
+Or install it as a Claude Code plugin:
+
+```
+/plugin marketplace add nextlevelbuilder/ui-ux-pro-max-skill
+/plugin install ui-ux-pro-max@ui-ux-pro-max-skill
+```
+
+The commands below assume the project install, run from the project root:
+`.claude/skills/ui-ux-pro-max/scripts/search.py`.
+If it was installed elsewhere, use that path instead: `~/.claude/skills/ui-ux-pro-max/scripts/search.py` for a user-level install, or `${CLAUDE_PLUGIN_ROOT}/.claude/skills/ui-ux-pro-max/scripts/search.py` for the plugin.
+If none of these exist, tell the user the base skill is missing and give the install commands above. Meanwhile, use the Quick Reference and the rules in this file without running searches.
+
+### 2. Python 3
+
+The script needs only the Python standard library. Check that Python is installed:
 
 ```bash
 python3 --version || python --version
 ```
+
+On Windows, the command is usually `python`, so use `python` instead of `python3` in every command below.
 
 If Python is not installed, install it based on user's OS:
 
@@ -349,7 +385,7 @@ Use this skill when the user requests any of the following:
 | **Choose style / color / font** | "What style fits a fintech app?", "Recommend a color palette" | Step 2 (design system) |
 | **Review existing UI** | "Review this page for UX issues", "Check accessibility" | Quick Reference checklist above |
 | **Fix a UI bug** | "Button hover is broken", "Layout shifts on load" | Quick Reference → relevant section |
-| **Improve / optimize** | "Make this faster", "Improve mobile experience" | Step 3 (domain search: ux, angular) |
+| **Improve / optimize** | "Make this faster", "Improve mobile experience" | Step 3 (domain: ux) → Step 4 (`--stack angular`) |
 | **Implement dark mode** | "Add dark mode support" | Step 3 (domain: style "dark mode") |
 | **Add charts / data viz** | "Add an analytics dashboard chart" | Step 3 (domain: chart) |
 | **Stack best practices** | "Angular performance tips", "Angular CDK navigation" | Step 4 (stack search) |
@@ -369,7 +405,7 @@ Extract key information from user request:
 **Always start with `--design-system`** to get comprehensive recommendations with reasoning:
 
 ```bash
-python3 skills/ui-ux-pro-max/scripts/search.py "<product_type> <industry> <keywords>" --design-system [-p "Project Name"]
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "<product_type> <industry> <keywords>" --design-system [-p "Project Name"]
 ```
 
 This command:
@@ -380,7 +416,7 @@ This command:
 
 **Example:**
 ```bash
-python3 skills/ui-ux-pro-max/scripts/search.py "beauty spa wellness service" --design-system -p "Serenity Spa"
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "beauty spa wellness service" --design-system -p "Serenity Spa"
 ```
 
 ### Step 2b: Persist Design System (Master + Overrides Pattern)
@@ -388,30 +424,34 @@ python3 skills/ui-ux-pro-max/scripts/search.py "beauty spa wellness service" --d
 To save the design system for **hierarchical retrieval across sessions**, add `--persist`:
 
 ```bash
-python3 skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system --persist -p "Project Name"
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system --persist -p "Project Name" --output-dir .
 ```
 
-This creates:
-- `design-system/MASTER.md` — Global Source of Truth with all design rules
-- `design-system/pages/` — Folder for page-specific overrides
+Always pass `--output-dir` pointing at the Angular project root (`.` when you run from it). An existing `MASTER.md` is not overwritten unless you add `--force`.
+
+This creates (`<project-slug>` is the project name in lowercase with hyphens):
+- `design-system/<project-slug>/MASTER.md` — Global Source of Truth with all design rules
+- `design-system/<project-slug>/pages/` — Folder for page-specific overrides
 
 **With page-specific override:**
 ```bash
-python3 skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system --persist -p "Project Name" --page "dashboard"
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system --persist -p "Project Name" --page "dashboard" --output-dir .
 ```
 
 This also creates:
-- `design-system/pages/dashboard.md` — Page-specific deviations from Master
+- `design-system/<project-slug>/pages/dashboard.md` — Page-specific deviations from Master
+
+Optional: add `--tokens css` (or `--tokens dtcg`) to also get design tokens you can map onto Angular Material theme CSS variables. Add `--preview` to write a `preview.html` of the generated system.
 
 **How hierarchical retrieval works:**
-1. When building a specific page (e.g., "Checkout"), first check `design-system/pages/checkout.md`
+1. When building a specific page (e.g., "Checkout"), first check `design-system/<project-slug>/pages/checkout.md`
 2. If the page file exists, its rules **override** the Master file
-3. If not, use `design-system/MASTER.md` exclusively
+3. If not, use `design-system/<project-slug>/MASTER.md` exclusively
 
 **Context-aware retrieval prompt:**
 ```
-I am building the [Page Name] page in Angular. Please read design-system/MASTER.md.
-Also check if design-system/pages/[page-name].md exists.
+I am building the [Page Name] page in Angular. Please read design-system/<project-slug>/MASTER.md.
+Also check if design-system/<project-slug>/pages/[page-name].md exists.
 If the page file exists, prioritize its rules.
 If not, use the Master rules exclusively.
 Now, generate the Angular code...
@@ -422,7 +462,7 @@ Now, generate the Angular code...
 After getting the design system, use domain searches to get additional details:
 
 ```bash
-python3 skills/ui-ux-pro-max/scripts/search.py "<keyword>" --domain <domain> [-n <max_results>]
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "<keyword>" --domain <domain> [-n <max_results>]
 ```
 
 **When to use detailed searches:**
@@ -438,20 +478,27 @@ python3 skills/ui-ux-pro-max/scripts/search.py "<keyword>" --domain <domain> [-n
 | Alternative fonts | `typography` | `--domain typography "elegant luxury"` |
 | Individual Google Fonts | `google-fonts` | `--domain google-fonts "sans serif popular variable"` |
 | Landing structure | `landing` | `--domain landing "hero social-proof"` |
-| Angular performance | `angular` | `--domain angular "performance change detection signals"` |
-| Angular CDK | `angular` | `--domain angular "cdk drag drop virtual scroll"` |
-| Angular Material | `angular` | `--domain angular "material theming dialog sidenav"` |
-| Angular Router | `angular` | `--domain angular "lazy loading guards resolvers"` |
-| Angular Forms | `angular` | `--domain angular "reactive forms validation async"` |
-| Angular Animations | `angular` | `--domain angular "animations enter leave trigger"` |
+| Icons with import code | `icons` | `--domain icons "settings navigation outline"` |
+| Animation presets | `gsap` | `--domain gsap "scroll reveal stagger"` |
+
+There is no `angular` domain. Angular guidance comes from the `angular` **stack** (Step 4).
 
 ### Step 4: Stack Guidelines (Angular)
 
 Get Angular implementation-specific best practices:
 
 ```bash
-python3 skills/ui-ux-pro-max/scripts/search.py "<keyword>" --stack angular
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "<keyword>" --stack angular
 ```
+
+| Need | Example |
+|------|---------|
+| Performance | `--stack angular "performance zoneless defer signals"` |
+| Angular CDK | `--stack angular "cdk harness virtual scroll"` |
+| Angular Material | `--stack angular "material theming tokens"` |
+| Angular Router | `--stack angular "lazy loading guards resolvers"` |
+| Angular Forms | `--stack angular "typed reactive forms validation"` |
+| Styling | `--stack angular "host encapsulation tailwind custom properties"` |
 
 ---
 
@@ -469,14 +516,15 @@ python3 skills/ui-ux-pro-max/scripts/search.py "<keyword>" --stack angular
 | `chart` | Chart types, library recommendations | trend, comparison, timeline, funnel, pie |
 | `ux` | Best practices, anti-patterns | animation, accessibility, z-index, loading |
 | `google-fonts` | Individual Google Fonts lookup | sans serif, monospace, japanese, variable font, popular |
-| `angular` | Angular/Angular Material/Angular CDK specific | performance, signals, cdk, material, router, forms |
-| `prompt` | AI prompts, CSS keywords | (style name) |
+| `icons` | Icon recommendations with import code | settings, navigation, outline, filled |
+| `gsap` | Animation skeletons by intensity tier | hover, scroll reveal, stagger, page transition |
+`style` and `product` also accept `--rtl` (or `--rtl=full|partial|caveats`) to keep only layouts that work for Arabic, Hebrew, Persian or Urdu interfaces. Example: `--domain style "dashboard" --rtl`.
 
 ### Available Stacks
 
 | Stack | Focus |
-|-------||-------|
-| `angular` | Components, Angular Material, Angular CDK, Angular Router, Signals, Reactive Forms |
+|-------|-------|
+| `angular` | Components, Routing, State (signals, NgRx Signal Store), Forms, Performance, Testing, Styling, Architecture |
 
 ---
 
@@ -493,7 +541,7 @@ python3 skills/ui-ux-pro-max/scripts/search.py "<keyword>" --stack angular
 ### Step 2: Generate Design System (REQUIRED)
 
 ```bash
-python3 skills/ui-ux-pro-max/scripts/search.py "AI search tool modern minimal" --design-system -p "AI Search"
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "AI search tool modern minimal" --design-system -p "AI Search"
 ```
 
 **Output:** Complete design system with pattern, style, colors, typography, effects, and anti-patterns.
@@ -502,19 +550,22 @@ python3 skills/ui-ux-pro-max/scripts/search.py "AI search tool modern minimal" -
 
 ```bash
 # Get style options for a modern tool product
-python3 skills/ui-ux-pro-max/scripts/search.py "minimalism dark mode" --domain style
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "minimalism dark mode" --domain style
 
 # Get UX best practices for search interaction and loading
-python3 skills/ui-ux-pro-max/scripts/search.py "search loading animation" --domain ux
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "search loading animation" --domain ux
 
-# Get Angular-specific guidance for performance and components
-python3 skills/ui-ux-pro-max/scripts/search.py "performance signals virtual scroll" --domain angular
+# Get icons for the search UI
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "search filter history" --domain icons
 ```
 
 ### Step 4: Stack Guidelines
 
 ```bash
-python3 skills/ui-ux-pro-max/scripts/search.py "component design material theme" --stack angular
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "component design material theme" --stack angular
+
+# Angular performance for a results list
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "performance signals defer" --stack angular
 ```
 
 **Then:** Synthesize design system + detailed searches and implement the Angular design.
@@ -527,10 +578,10 @@ The `--design-system` flag supports two output formats:
 
 ```bash
 # ASCII box (default) - best for terminal display
-python3 skills/ui-ux-pro-max/scripts/search.py "fintech crypto" --design-system
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "fintech crypto" --design-system
 
 # Markdown - best for documentation
-python3 skills/ui-ux-pro-max/scripts/search.py "fintech crypto" --design-system -f markdown
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "fintech crypto" --design-system -f markdown
 ```
 
 ---
@@ -542,7 +593,7 @@ python3 skills/ui-ux-pro-max/scripts/search.py "fintech crypto" --design-system 
 - Use **multi-dimensional keywords** — combine product + industry + tone + density: `"entertainment social vibrant content-dense"` not just `"app"`
 - Try different keywords for the same need: `"playful neon"` → `"vibrant dark"` → `"content-first minimal"`
 - Use `--design-system` first for full recommendations, then `--domain` to deep-dive any dimension you're unsure about
-- Always add `--domain angular` for Angular-specific implementation guidance
+- Always finish with `--stack angular` for Angular-specific implementation guidance
 
 ### Common Sticking Points
 
@@ -554,18 +605,19 @@ python3 skills/ui-ux-pro-max/scripts/search.py "fintech crypto" --design-system 
 | Form UX is poor | Quick Reference §8: `inline-validation` + `error-clarity` + `focus-management` |
 | Navigation feels confusing | Quick Reference §9: `nav-hierarchy` + `sidenav-limit` + `back-behavior` |
 | Layout breaks on small screens | Quick Reference §5: `mobile-first` + `breakpoint-consistency` |
-| Performance / jank | Quick Reference §3: `virtualize-lists` + `on-push` + `trackby` + `signals` |
+| Performance / jank | Quick Reference §3: `virtualize-lists` + `on-push` + `track-in-for` + `defer-below-fold` + `signals` |
 | Angular change detection issues | Quick Reference §3: `on-push` + `signals` + `debounce-throttle` |
 | Angular Material theming | Quick Reference §4: `angular-material-theme` + `elevation-consistent` |
 
-### Pre-Delivery Checklist
+### Review Process
 
 - Run `--domain ux "animation accessibility z-index loading"` as a UX validation pass before implementation
 - Run through Quick Reference **§1–§3** (CRITICAL + HIGH) as a final review
 - Test on 375px (small phone) and landscape orientation
-- Verify behavior with **reduced-motion** enabled and **Dynamic Type** at largest size
+- Verify behavior with **reduced-motion** enabled and browser text zoom at 200%
 - Check dark mode contrast independently (don't assume light mode values work)
-- Confirm all touch targets ≥44pt and no content hidden behind safe areas
+- Confirm all touch targets ≥44×44px and no content hidden behind safe areas
+- Finish with the [Pre-Delivery Checklist](#pre-delivery-checklist) at the end of this file
 
 ---
 
@@ -581,10 +633,10 @@ These are frequently overlooked issues that make Angular UI look unprofessional:
 | **Vector-Only Assets** | Use SVG or platform vector icons that scale cleanly and support theming via Angular Material Icon | Raster PNG icons that blur or pixelate. | Ensures scalability, crisp rendering, and dark/light mode adaptability. |
 | **Stable Interaction States** | Use color, opacity, or elevation transitions for press states without changing layout bounds. | Layout-shifting transforms that move surrounding content or trigger visual jitter. | Prevents unstable interactions and preserves smooth motion/perceived quality on mobile. |
 | **Correct Brand Logos** | Use official brand assets and follow their usage guidelines (spacing, color, clear space). | Guessing logo paths, recoloring unofficially, or modifying proportions. | Prevents brand misuse and ensures legal/platform compliance. |
-| **Consistent Icon Sizing** | Define icon sizes as design tokens (e.g., icon-sm, icon-md = 24pt, icon-lg). | Mixing arbitrary values like 20px / 24px / 28px randomly. | Maintains rhythm and visual hierarchy across the interface. |
+| **Consistent Icon Sizing** | Define icon sizes as design tokens (e.g., icon-sm = 16px, icon-md = 24px, icon-lg = 32px). | Picking sizes ad hoc per component (20px here, 22px there, 28px elsewhere). | Maintains rhythm and visual hierarchy across the interface. |
 | **Stroke Consistency** | Use a consistent stroke width within the same visual layer (e.g., 1.5px or 2px). | Mixing thick and thin stroke styles arbitrarily. | Inconsistent strokes reduce perceived polish and cohesion. |
 | **Filled vs Outline Discipline** | Use one icon style per hierarchy level. | Mixing filled and outline icons at the same hierarchy level. | Maintains semantic clarity and stylistic coherence. |
-| **Touch Target Minimum** | Minimum 44×44pt interactive area (use `hitSlop` or padding to expand). | Small icons without expanded tap area. | Meets accessibility and platform usability standards. |
+| **Touch Target Minimum** | Minimum 44×44px interactive area (expand with padding or a `::before` hit area; `mat-icon-button` already gives 48×48px). | Small icons without expanded tap area. | Meets accessibility and platform usability standards. |
 | **Icon Alignment** | Align icons to text baseline and maintain consistent padding. | Misaligned icons or inconsistent spacing around them. | Prevents subtle visual imbalance that reduces perceived quality. |
 | **Icon Contrast** | Follow WCAG contrast standards: 4.5:1 for small elements, 3:1 minimum for larger UI glyphs. | Low-contrast icons that blend into the background. | Ensures accessibility in both light and dark modes. |
 
@@ -592,14 +644,14 @@ These are frequently overlooked issues that make Angular UI look unprofessional:
 
 | Rule | Do | Don't |
 |------|----|----- |
-| **Tap feedback** | Provide clear pressed feedback (ripple/opacity/elevation) within 80-150ms using Angular Material ripple | No visual response on tap |
-| **Animation timing** | Keep micro-interactions around 150-300ms with Angular Animations and native easing | Instant transitions or slow animations (>500ms) |
+| **Tap feedback** | Start pressed feedback (ripple/opacity/elevation) within 100ms using Angular Material ripple (`matRipple`) | No visual response on tap |
+| **Animation timing** | Keep micro-interactions around 150-300ms using CSS transitions with `animate.enter`/`animate.leave` and native easing | Instant transitions or slow animations (>500ms) |
 | **Accessibility focus** | Ensure screen reader focus order matches visual order, use Angular CDK a11y, labels are descriptive | Unlabeled controls or confusing focus traversal |
 | **Disabled state clarity** | Use `disabled` attribute, `aria-disabled`, reduced emphasis, and no tap action | Controls that look tappable but do nothing |
-| **Touch target minimum** | Keep tap areas >=44x44pt, expand hit area when icon is smaller using padding/hitSlop | Tiny tap targets or icon-only hit areas without padding |
+| **Touch target minimum** | Keep tap areas >=44x44px, expand hit area when icon is smaller using padding | Tiny tap targets or icon-only hit areas without padding |
 | **Gesture conflict prevention** | Keep one primary gesture per region and avoid nested tap/drag conflicts | Overlapping gestures causing accidental actions |
 | **Angular Material Primitives** | Prefer Angular Material components (`<button mat-button>`, `<input matInput>`) with proper accessibility roles | Generic HTML elements used as primary controls without Angular Material wrappers |
-| **Change Detection** | Use OnPush change detection and Signals to minimize unnecessary re-renders | Default change detection on frequently updating components |
+| **Change Detection** | Drive frequently updating UI with Signals; use OnPush where input-driven subtrees can be skipped | Mutable class fields and manual `detectChanges()` calls to force updates |
 
 ### Light/Dark Mode Contrast
 
@@ -607,7 +659,7 @@ These are frequently overlooked issues that make Angular UI look unprofessional:
 |------|----|-----|
 | **Surface readability (light)** | Keep cards/surfaces clearly separated from background with sufficient opacity/elevation | Overly transparent surfaces that blur hierarchy |
 | **Text contrast (light)** | Maintain body text contrast >=4.5:1 against light surfaces | Low-contrast gray body text |
-| **Text contrast (dark)** | Maintain primary text contrast >=4.5:1 and secondary text >=3:1 on dark surfaces | Dark mode text that blends into background |
+| **Text contrast (dark)** | Maintain >=4.5:1 for all body-size text, primary and secondary (3:1 only for large text ≥24px, or ≥18.66px bold) on dark surfaces | Dark mode text that blends into background |
 | **Border and divider visibility** | Ensure separators are visible in both themes (not just light mode) | Theme-specific borders disappearing in one mode |
 | **State contrast parity** | Keep pressed/focused/disabled states equally distinguishable in light and dark themes | Defining interaction states for one theme only |
 | **Token-driven theming** | Use Angular Material theming with semantic color tokens mapped per theme across app surfaces/text/icons | Hardcoded per-screen hex values |
@@ -620,25 +672,29 @@ These are frequently overlooked issues that make Angular UI look unprofessional:
 | **Safe-area compliance** | Respect top/bottom safe areas for all fixed headers, tab bars, and CTA bars using CSS env() | Placing fixed UI under notch, status bar, or gesture area |
 | **System bar clearance** | Add spacing for status/navigation bars and gesture home indicator | Let tappable content collide with OS chrome |
 | **Consistent content width** | Keep predictable content width per device class (phone/tablet) | Mixing arbitrary widths between screens |
-| **8dp spacing rhythm** | Use a consistent 4/8dp spacing system for padding/gaps/section spacing | Random spacing increments with no rhythm |
+| **8px spacing rhythm** | Use a consistent 4/8px spacing system for padding/gaps/section spacing | Random spacing increments with no rhythm |
 | **Readable text measure** | Keep long-form text readable on large devices (avoid edge-to-edge paragraphs on tablets) | Full-width long text that hurts readability |
 | **Section spacing hierarchy** | Define clear vertical rhythm tiers (e.g., 16/24/32/48) by hierarchy | Similar UI levels with inconsistent spacing |
 | **Adaptive gutters by breakpoint** | Increase horizontal insets on larger widths and in landscape using Angular CDK BreakpointObserver | Same narrow gutter on all device sizes/orientations |
 | **Scroll and fixed element coexistence** | Add bottom/top content insets so lists are not hidden behind fixed bars | Scroll content obscured by sticky headers/footers |
-| **Responsive Grid** | Use Angular Flex Layout or CSS Grid for responsive layouts | Fixed pixel widths that don't adapt |
+| **Responsive Grid** | Use CSS Grid/Flexbox (or Tailwind) for responsive layouts | Fixed pixel widths that don't adapt, or the deprecated Angular Flex Layout (`fxLayout`) |
+| **RTL mirroring** | Use logical properties (`padding-inline-start`) and set `dir` so CDK/Material components mirror | Hardcoded `left`/`right` margins and icons that don't flip in RTL |
 
 ### Angular-Specific Patterns
 
 | Rule | Do | Don't |
 |------|----|----- |
-| **Standalone Components** | Use Angular standalone components for modern architecture | Module-based components where standalone is more appropriate |
+| **Standalone Components** | Use standalone components (the default; no `standalone: true` needed) | New `NgModule` declarations |
+| **Component APIs** | Use `input()`, `output()` and `model()` | `@Input()` / `@Output()` with `EventEmitter` in new components |
 | **Lazy Loading** | Use `loadChildren` or `loadComponent` for lazy loaded routes | Eagerly loading all routes upfront |
-| **OnPush Change Detection** | Use OnPush change detection strategy for performance | Default change detection on all components |
-| **TrackBy in *ngFor** | Always provide trackBy function for *ngFor | Omitting trackBy causing unnecessary DOM recreation |
+| **OnPush Change Detection** | Use OnPush where input-driven subtrees can be skipped; keep components zoneless-ready | Relying on Zone.js to catch mutations of plain class fields |
+| **Track in @for** | Always give `@for` a stable key: `@for (item of items(); track item.id)` | `track $index` for lists that reorder, insert or delete |
 | **Signals for State** | Use Angular Signals for component-level reactive state | Overusing observables where signals suffice |
 | **ControlValueAccessor** | Implement CVA for custom form controls | Bypassing Angular form architecture |
-| **Semantic Templates** | Use Angular template syntax properly with *ngIf, *ngFor, ng-container | Div soup or misused structural directives |
-| **Lazy Loading Images** | Use loading="lazy" and Angular img elements with srcset | Loading all images eagerly |
+| **Semantic Templates** | Use built-in control flow (`@if`, `@for`, `@switch`) with semantic HTML and `<ng-container>` | `*ngIf` / `*ngFor` in new code, or div soup |
+| **Deferred Content** | Use `@defer (on viewport)` with a same-size `@placeholder` for heavy below-the-fold widgets | Loading charts and editors in the initial bundle |
+| **Optimized Images** | Use `NgOptimizedImage` (`ngSrc`, `width`/`height`, `priority` on the LCP image) | Plain `<img>` with no dimensions, causing layout shift |
+| **Animations** | Use CSS with `animate.enter` / `animate.leave` | Adding the deprecated `@angular/animations` package to new code |
 
 ---
 
@@ -656,7 +712,7 @@ Before delivering Angular UI code, verify these items:
 
 ### Interaction
 - [ ] All tappable elements provide clear pressed feedback (ripple/opacity/elevation)
-- [ ] Touch targets meet minimum size (>=44x44pt)
+- [ ] Touch targets meet minimum size (>=44x44px)
 - [ ] Micro-interaction timing stays in the 150-300ms range with native-feeling easing
 - [ ] Disabled states are visually clear and non-interactive
 - [ ] Screen reader focus order matches visual order, and interactive labels are descriptive
@@ -664,8 +720,7 @@ Before delivering Angular UI code, verify these items:
 - [ ] Angular Material ripple effect is applied to interactive elements
 
 ### Light/Dark Mode
-- [ ] Primary text contrast >=4.5:1 in both light and dark mode
-- [ ] Secondary text contrast >=3:1 in both light and dark mode
+- [ ] Primary and secondary body text contrast >=4.5:1 in both light and dark mode (3:1 only for large text)
 - [ ] Dividers/borders and interaction states are distinguishable in both modes
 - [ ] Modal/drawer scrim opacity is strong enough to preserve foreground legibility (typically 40-60% black)
 - [ ] Both themes are tested before delivery (not inferred from a single theme)
@@ -676,13 +731,15 @@ Before delivering Angular UI code, verify these items:
 - [ ] Scroll content is not hidden behind fixed/sticky bars
 - [ ] Verified on small phone, large phone, and tablet (portrait + landscape)
 - [ ] Horizontal insets/gutters adapt correctly by device size and orientation
-- [ ] 4/8dp spacing rhythm is maintained across component, section, and page levels
+- [ ] 4/8px spacing rhythm is maintained across component, section, and page levels
 - [ ] Long-form text measure remains readable on larger devices (no edge-to-edge paragraphs)
-- [ ] Angular Flex Layout or CSS Grid is used for responsive behavior
+- [ ] CSS Grid/Flexbox (not the deprecated Angular Flex Layout) is used for responsive behavior
+- [ ] Layout mirrors correctly with `dir="rtl"` if the app supports RTL languages
 
 ### Angular Performance
 - [ ] OnPush change detection is used where appropriate
-- [ ] TrackBy is provided for all *ngFor loops
+- [ ] Every `@for` has a stable `track` expression
+- [ ] Heavy below-the-fold content uses `@defer`, and images use `NgOptimizedImage`
 - [ ] Lazy loading is implemented for feature routes
 - [ ] Signals are used for fine-grained reactivity
 - [ ] Virtual scrolling is used for lists with 50+ items
@@ -692,6 +749,6 @@ Before delivering Angular UI code, verify these items:
 - [ ] All meaningful images/icons have accessibility labels
 - [ ] Form fields have labels, hints, and clear error messages
 - [ ] Color is not the only indicator
-- [ ] Reduced motion and dynamic text size are supported without layout breakage
+- [ ] Reduced motion and 200% browser text zoom are supported without layout breakage
 - [ ] Angular CDK a11y is used for focus trapping, live announcer, etc.
 - [ ] Accessibility traits/roles/states (selected, disabled, expanded) are announced correctly
